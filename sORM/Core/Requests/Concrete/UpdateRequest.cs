@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace sORM.Core.Requests.Concrete
 {
@@ -31,14 +32,6 @@ namespace sORM.Core.Requests.Concrete
         public string BuildSql()
         {
             var map = SimpleORM.Current.Mappings[Target.GetType()];
-            var keys = new List<string>();
-            var values = new List<string>();
-            foreach (var item in map.Data)
-            {
-                var value = item.Key.GetValue(Target);
-                keys.Add(item.Key.Name);
-                values.Add((value is String || value is Guid) ? string.Format("'{0}'", value) : value.ToString());
-            }
 
             var prms = parameters.Select(x => x.Key + "=" + x.Value);
 
@@ -57,12 +50,33 @@ namespace sORM.Core.Requests.Concrete
                 }
             }
 
-            return "UPDATE " + map.Name + " SET " + string.Join(",", prms) + cnds;
+            return "UPDATE [" + map.Name + "] SET " + string.Join(",", prms) + cnds;
         }
 
         public void AddParameter(string fieldname, object value)
         {
-            parameters.Add(fieldname, (value is String || value is Guid) ? string.Format("'{0}'", value) : value.ToString());
+            string res;
+            if (value == null)
+            {
+                res = "NULL";
+            }
+            else if (value is string || value is Guid || value is DateTime)
+            {
+                res = string.Format("'{0}'", value);
+            }
+            else if (value is bool)
+            {
+                res = ((bool)value) ? "1" : "0";
+            }
+            else if (value is XmlDocument)
+            {
+                res = "'" + ((XmlDocument)value).InnerXml + "'";
+            }
+            else
+            {
+                res = value.ToString();
+            }
+            parameters.Add(fieldname, res);
         }
 
         public void AddCondition(ICondition condition)

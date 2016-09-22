@@ -32,7 +32,7 @@ namespace sORM.Core.Requests.Concrete
 
         public string BuildSql()
         {
-            var request = "DELETE FROM " + tableName;
+            var request = "DELETE FROM [" + tableName + "] ";
 
             if (Conditions.Count > 0) 
             { 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace sORM.Core.Requests.Concrete
 {
@@ -24,9 +25,28 @@ namespace sORM.Core.Requests.Concrete
             {
                 var value = item.Key.GetValue(Target);
                 keys.Add(item.Key.Name);
-                values.Add((value is String || value is Guid) ? string.Format("'{0}'", value) : value.ToString());
+                if (value == null)
+                {
+                    values.Add("NULL");
+                }
+                else if (value is string || value is Guid || value is DateTime)
+                {
+                    values.Add(string.Format("'{0}'", value));
+                }
+                else if (value is bool)
+                {
+                    values.Add(((bool)value) ? "1" : "0");
+                }
+                else if (value is XmlDocument)
+                {
+                    values.Add("'" + ((XmlDocument)value).InnerXml + "'");
+                }
+                else
+                {
+                    values.Add(value.ToString());
+                }
             }
-            return "INSERT INTO " + map.Name + " (" + string.Join(",", keys) + ")" + " VALUES " + " (" + string.Join(",", values) + ")";
+            return "INSERT INTO [" + map.Name + "] (" + string.Join(",", keys) + ")" + " VALUES " + " (" + string.Join(",", values) + ")";
         }
     }
 }
