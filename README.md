@@ -2,15 +2,21 @@
 Simple ORM and nothing more.
 
 ### Mappings
-To link class and table in database you need to inherit your class from **DataEntity** and decorate it with **DataModel** attribute.
-Then you need to decorate fields you want to see in database with **MapAsType** attributes.
+To link class and table in database you need to inherit your class from `DataEntity` and decorate it with `DataModel` attribute.
+Then you need to decorate fields you want to see in database with `MapAsType` attributes.
+You can also use `MapAuto` attribute to let the ORM detect and map type.
+Supported types for auto mapping:
+* `string` as **VARCHAR(MAX)**
+* `int` as **INT**
+* `bool` as **BIT**
+* `float` as **REAL**
 
 Example: 
 ```c#
   [DataModel]
   class MyClass : DataEntity
   {
-    [MapAsType(DataType.Int)]
+    [MapAuto]
     public int MyProperty { get; set; }
   
     [MapAsType(DataType.String)]
@@ -67,7 +73,7 @@ Example:
 
   var result = SimpleORM.Current.Get<MyClass>(
     Condition.Equals("MyProperty2", "baz"),
-    new DataEntityListLoadOptions() { PageSize = 1, PageNumber = 2 }
+    new DataEntityListLoadOptions(size: 1, index: 2)
   );
 ```
 
