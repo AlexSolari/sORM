@@ -41,16 +41,16 @@ namespace sORM.Core
 
         protected MapBinder Mapper = new MapBinder();
 
-        public void ToggleLogging()
+        public void AddOnRequestListener(Action<string> action)
         {
-            Requests.LoggingEnabled = !Requests.LoggingEnabled;
+            Requests.AddOnRequestListener(action);
         }
 
         public void Initialize(string connectionString)
         {
             Requests = new RequestProcessor(connectionString);
 
-            var types = Assembly.GetExecutingAssembly().DefinedTypes;
+            var types = Assembly.GetCallingAssembly().DefinedTypes;
             foreach (var type in types)
             {
                 if (type.GetCustomAttribute(typeof(DataModelAttribute)) != null)
@@ -92,15 +92,16 @@ namespace sORM.Core
             Requests.Execute(request);
         }
 
-        public void Delete<T>(ICondition condition)
+        public void Delete<T>(ICondition condition = null)
             where T : DataEntity
         {
             var request = new DeleteRequest(typeof(T));
-            request.AddCondition(condition);
+            if (condition != null)
+                request.AddCondition(condition);
             Requests.Execute(request);
         }
 
-        public IEnumerable<T> Get<T>(ICondition condition, DataEntityListLoadOptions options = null)
+        public IEnumerable<T> Get<T>(ICondition condition = null, DataEntityListLoadOptions options = null)
             where T : DataEntity
         {
             SelectRequest request;
@@ -122,26 +123,28 @@ namespace sORM.Core
                 request = new SelectRequest(options.PageSize, options.PageNumber);
             }
 
-            request.AddCondition(condition);
+            if (condition != null)
+                request.AddCondition(condition);
 
             request.SetTargetType<T>();
             request.SetResponseType<T>();
 
-            return Requests.Execute(request).OfType<T>();
+            return Requests.Execute<T>(request);
         }
 
-        public int Count<T>(ICondition condition)
+        public int Count<T>(ICondition condition = null)
             where T : DataEntity
         {
             var request = new SelectRequest(true);
 
             request.SetTargetType<T>();
 
-            request.AddCondition(condition);
+            if (condition != null)
+                request.AddCondition(condition);
 
-            var result = Requests.Execute(request);
+            var result = Requests.Execute<int>(request);
 
-            return result.OfType<int>().First();
+            return result.First();
         }
     }
 }

@@ -8,6 +8,15 @@ namespace sORM.Core.Mappings
 {
     public class MapBinder
     {
+        private Dictionary<Type, string> TypeMapping = new Dictionary<Type, string>()
+        {
+            [typeof(string)] = "varchar(MAX)",
+            [typeof(int)] = "int",
+            [typeof(bool)] = "bit",
+            [typeof(float)] = "real",
+        };
+
+
         public void Map(Type type)
         {
             if (!typeof(DataEntity).IsAssignableFrom(type))
@@ -36,6 +45,10 @@ namespace sORM.Core.Mappings
                     {
                         sqltype = ((MapAsTypeAttribute)attrib).Type;
                     }
+                    else if (attrib.GetType() == typeof(MapAutoAttribute))
+                    {
+                        sqltype = DetectType(prop.PropertyType);
+                    }
                 }
 
                 if (string.IsNullOrWhiteSpace(sqltype))
@@ -46,6 +59,24 @@ namespace sORM.Core.Mappings
             }
 
             SimpleORM.Current.Mappings.Add(type, result);
+        }
+
+        private string DetectType(Type propertyType, bool useStringAsDefault = true)
+        {
+            string result;
+            if (TypeMapping.ContainsKey(propertyType))
+            {
+                result = TypeMapping[propertyType];
+            }
+            else if (useStringAsDefault)
+            {
+                result = TypeMapping[typeof(string)];
+            }
+            else
+            {
+                throw new ArgumentException("Can't map .NET type to SQL type.");
+            }
+            return result;
         }
 
         public void Map<TType>()

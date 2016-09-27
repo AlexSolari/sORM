@@ -89,7 +89,7 @@ namespace sORM.Core.Requests.Concrete
 
         public string BuildSql()
         {
-            var request = "SELECT " + ((onlyCount) ? "COUNT(*)" : "*") + " FROM " + targetType.Name;
+            var request = "SELECT " + ((onlyCount) ? "COUNT(*)" : "*") + " FROM [" + targetType.Name + "] ";
 
             if (Conditions.Count > 0)
             {
