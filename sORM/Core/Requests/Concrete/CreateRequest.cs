@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,12 +13,12 @@ namespace sORM.Core.Requests.Concrete
     {
         private object Target;
 
-        public CreateRequest(DataEntity objToCreate)
+        public CreateRequest(object objToCreate)
         {
             Target = objToCreate;
         }
 
-        public string BuildSql()
+        public IDbCommand BuildSql()
         {
             var map = SimpleORM.Current.Mappings[Target.GetType()];
             var keys = new List<string>();
@@ -31,22 +33,32 @@ namespace sORM.Core.Requests.Concrete
                 }
                 else if (value is string || value is Guid || value is DateTime)
                 {
-                    values.Add(string.Format("'{0}'", value));
+                    values.Add(value.ToString());
                 }
                 else if (value is bool)
                 {
-                    values.Add(((bool)value) ? "1" : "0");
+                    values.Add(value.ToString());
                 }
                 else if (value is XmlDocument)
                 {
-                    values.Add("'" + ((XmlDocument)value).InnerXml + "'");
+                    values.Add(((XmlDocument)value).InnerXml);
                 }
                 else
                 {
                     values.Add(value.ToString());
                 }
             }
-            return "INSERT INTO [" + map.Name + "] (" + string.Join(",", keys) + ")" + " VALUES " + " (" + string.Join(",", values) + ")";
+
+            var generatedKeys = keys.Select(x => "@SqlParam" + x).ToList();
+            var commandText = "INSERT INTO [" + map.Name + "] (" + string.Join(",", keys) + ")" + " VALUES " + " (" + string.Join(",", generatedKeys) + ")";
+            var command = new SqlCommand(commandText, SimpleORM.Current.Requests.connection.Connection as SqlConnection);
+            
+            foreach (var item in generatedKeys.ToDictionary(x => x, y => values[generatedKeys.IndexOf(y)]))
+            {
+                command.Parameters.Add(item.Key, map.GetSqlType(item.Key.Replace("@SqlParam", ""))).Value = item.Value;
+            }
+
+            return command;
         }
     }
 }

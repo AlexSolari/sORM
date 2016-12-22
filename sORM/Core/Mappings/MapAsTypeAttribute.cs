@@ -15,7 +15,7 @@ namespace sORM.Core.Mappings
         Float,
     }
 
-    [AttributeUsage(AttributeTargets.Property, AllowMultiple=false)]
+    [AttributeUsage(AttributeTargets.Property, AllowMultiple=false, Inherited = true)]
     public class MapAsTypeAttribute : Attribute
     {
         public string Type;
@@ -28,10 +28,7 @@ namespace sORM.Core.Mappings
                     Type = "int";
                     break;
                 case DataType.String:
-                    Type = "varchar(MAX)";
-                    break;
-                case DataType.Text:
-                    Type = "text";
+                    Type = "VARCHAR(MAX)";
                     break;
                 case DataType.Bool:
                     Type = "bit";

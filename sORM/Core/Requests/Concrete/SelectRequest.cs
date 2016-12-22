@@ -1,9 +1,11 @@
 ﻿using sORM.Core.Conditions;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace sORM.Core.Requests.Concrete
 {
@@ -87,8 +89,10 @@ namespace sORM.Core.Requests.Concrete
             targetType = type;
         }
 
-        public string BuildSql()
+        public System.Data.IDbCommand BuildSql()
         {
+            var map = SimpleORM.Current.Mappings[targetType];
+
             var request = "SELECT " + ((onlyCount) ? "COUNT(*)" : "*") + " FROM [" + targetType.Name + "] ";
 
             if (Conditions.Count > 0)
@@ -123,7 +127,38 @@ namespace sORM.Core.Requests.Concrete
                 request += " OFFSET " + pageSize * pageCount + " ROWS FETCH NEXT " + pageSize + " ROWS ONLY ";
             }
 
-            return request;
+            var command = new SqlCommand(request, SimpleORM.Current.Requests.connection.Connection as SqlConnection);
+
+            foreach (RequestCondition item in Conditions)
+            {
+                foreach (var parameter in item.Parameters)
+                {
+                    object value;
+                    if (parameter.Value == null)
+                    {
+                        value = "NULL";
+                    }
+                    else if (parameter.Value is string || parameter.Value is Guid || parameter.Value is DateTime)
+                    {
+                        value = parameter.Value.ToString();
+                    }
+                    else if (parameter.Value is bool)
+                    {
+                        value = parameter.Value;
+                    }
+                    else if (parameter.Value is XmlDocument)
+                    {
+                        value = ((XmlDocument)parameter.Value).InnerXml;
+                    }
+                    else
+                    {
+                        value = parameter.Value.ToString();
+                    }
+                    command.Parameters.Add(parameter.Key, map.GetSqlType(item.Field)).Value = value;
+                }
+            }
+
+            return command;
         }
 
         public void AddCondition(ICondition condition)

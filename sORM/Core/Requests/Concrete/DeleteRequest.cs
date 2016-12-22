@@ -1,9 +1,12 @@
 ﻿using sORM.Core.Conditions;
 using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace sORM.Core.Requests.Concrete
 {
@@ -11,18 +14,23 @@ namespace sORM.Core.Requests.Concrete
     {
         public IList<ICondition> Conditions { get; set; }
         private string tableName;
+        private Type TargetType;
 
-        public DeleteRequest(DataEntity obj)
+        public DeleteRequest(object obj)
         {
+            TargetType = obj.GetType();
             tableName = obj.GetType().Name;
             Conditions = new List<ICondition>();
-            AddCondition(Condition.Equals("DataId", obj.DataId));
+
+            var map = SimpleORM.Current.Mappings[TargetType];
+            AddCondition(Condition.Equals(map.KeyName, TargetType.GetProperty(map.KeyName).GetValue(obj)));
         }
 
         public DeleteRequest(Type type)
         {
             Conditions = new List<ICondition>();
             tableName = type.Name;
+            TargetType = type;
         }
 
         public void AddCondition(ICondition condition)
@@ -30,8 +38,10 @@ namespace sORM.Core.Requests.Concrete
             Conditions.Add(condition);
         }
 
-        public string BuildSql()
+        public IDbCommand BuildSql()
         {
+            var map = SimpleORM.Current.Mappings[TargetType];
+
             var request = "DELETE FROM [" + tableName + "] ";
 
             if (Conditions.Count > 0) 
@@ -47,7 +57,39 @@ namespace sORM.Core.Requests.Concrete
                         request += " AND ";
                 }
             }
-            return request;
+
+            var command = new SqlCommand(request, SimpleORM.Current.Requests.connection.Connection as SqlConnection);
+
+            foreach (RequestCondition item in Conditions)
+            {
+                foreach (var parameter in item.Parameters)
+                {
+                    object value;
+                    if (parameter.Value == null)
+                    {
+                        value = "NULL";
+                    }
+                    else if (parameter.Value is string || parameter.Value is Guid || parameter.Value is DateTime)
+                    {
+                        value = parameter.Value.ToString();
+                    }
+                    else if (parameter.Value is bool)
+                    {
+                        value = parameter.Value;
+                    }
+                    else if (parameter.Value is XmlDocument)
+                    {
+                        value = ((XmlDocument)parameter.Value).InnerXml;
+                    }
+                    else
+                    {
+                        value = parameter.Value.ToString();
+                    }
+                    command.Parameters.Add(parameter.Key, map.GetSqlType(item.Field)).Value = value;
+                }
+            }
+
+            return command;
         }
     }
 }

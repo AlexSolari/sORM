@@ -37,7 +37,7 @@ namespace sORM.Core
 
         public Dictionary<Type, Map> Mappings = new Dictionary<Type, Map>();
 
-        protected RequestProcessor Requests = null;
+        internal RequestProcessor Requests = null;
 
         protected MapBinder Mapper = new MapBinder();
 
@@ -60,17 +60,47 @@ namespace sORM.Core
             }
 
             Requests.Initialize();
+
+            var prepareRequest = new SqlRequest("IF EXISTS(SELECT* FROM sys.objects WHERE object_id = OBJECT_ID(N'DatabaseHealthCheck') AND type in (N'P', N'PC')) " +
+                    "DROP PROCEDURE DatabaseHealthCheck;");
+            var healthCheckRequest = new CreateProcedureRequest(@"
+            SELECT  @@ServerName AS ServerName ,
+                    DB_NAME() AS DBName ,
+                    OBJECT_NAME(ddius.object_id) AS TableName ,
+                    SUM(ddius.user_seeks + ddius.user_scans + ddius.user_lookups) AS  Reads ,
+                    SUM(ddius.user_updates) AS Writes ,
+                    SUM(ddius.user_seeks + ddius.user_scans + ddius.user_lookups
+                        + ddius.user_updates) AS [Reads&Writes] ,
+                    ( SELECT    DATEDIFF(s, create_date, GETDATE()) / 86400.0
+                      FROM      master.sys.databases
+                      WHERE     name = 'tempdb'
+                    ) AS SampleDays ,
+                    ( SELECT    DATEDIFF(s, create_date, GETDATE()) AS SecoundsRunnig
+                      FROM      master.sys.databases
+                      WHERE     name = 'tempdb'
+                    ) AS SampleSeconds
+            FROM    sys.dm_db_index_usage_stats ddius
+                    INNER JOIN sys.indexes i ON ddius.object_id = i.object_id
+                                                 AND i.index_id = ddius.index_id
+            WHERE    OBJECTPROPERTY(ddius.object_id, 'IsUserTable') = 1
+                    AND ddius.database_id = DB_ID()
+            GROUP BY OBJECT_NAME(ddius.object_id)
+            ORDER BY [Reads&Writes] DESC;
+            ", "DatabaseHealthCheck");
+
+            Requests.Execute(prepareRequest);
+            Requests.Execute(healthCheckRequest);
         }
 
         public void CreateOrUpdate<T>(T obj)
-            where T : DataEntity
         {
+            var map = Mappings[typeof(T)];
             var isCreate = false;
 
             var checkIsExistRequest = new SelectRequest(true);
             checkIsExistRequest.SetTargetType(obj.GetType());
 
-            isCreate = Count<T>(Condition.Equals("DataId", obj.DataId)) == 0;
+            isCreate = Count<T>(Condition.Equals(map.KeyName, typeof(T).GetProperty(map.KeyName).GetValue(obj))) == 0;
 
             IRequest request;
 
@@ -86,14 +116,13 @@ namespace sORM.Core
             Requests.Execute(request);
         }
 
-        public void Delete(DataEntity obj)
+        public void Delete(object obj)
         {
             var request = new DeleteRequest(obj);
             Requests.Execute(request);
         }
 
         public void Delete<T>(ICondition condition = null)
-            where T : DataEntity
         {
             var request = new DeleteRequest(typeof(T));
             if (condition != null)
@@ -102,7 +131,6 @@ namespace sORM.Core
         }
 
         public IEnumerable<T> Get<T>(ICondition condition = null, DataEntityListLoadOptions options = null)
-            where T : DataEntity
         {
             SelectRequest request;
 
@@ -133,7 +161,6 @@ namespace sORM.Core
         }
 
         public int Count<T>(ICondition condition = null)
-            where T : DataEntity
         {
             var request = new SelectRequest(true);
 

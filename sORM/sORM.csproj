@@ -46,16 +46,22 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\Conditions\Condition.cs" />
+    <Compile Include="Core\Conditions\RequestConditionBase.cs" />
     <Compile Include="Core\Conditions\ICondition.cs" />
     <Compile Include="Core\Conditions\Operator.cs" />
     <Compile Include="Core\Conditions\RequestCondition.cs" />
     <Compile Include="Core\Conditions\RequestConditionGroup.cs" />
-    <Compile Include="Core\DataEntity.cs" />
     <Compile Include="Core\DataEntityListLoadOptions.cs" />
     <Compile Include="Core\Mappings\DataModelAttribute.cs" />
+    <Compile Include="Core\Mappings\Exceptions\KeyPropertyNotFoundException.cs" />
     <Compile Include="Core\Mappings\Map.cs" />
+    <Compile Include="Core\Mappings\KeyAttribute.cs" />
+    <Compile Include="Core\Mappings\MapAutoAttribute.cs" />
     <Compile Include="Core\Mappings\MapAsTypeAttribute.cs" />
     <Compile Include="Core\Mappings\MapBinder.cs" />
+    <Compile Include="Core\Requests\Concrete\CreateProcedureRequest.cs" />
+    <Compile Include="Core\Requests\Concrete\AttachTriggerRequest.cs" />
+    <Compile Include="Core\Requests\Concrete\SqlRequest.cs" />
     <Compile Include="Core\Requests\Concrete\UpdateRequest.cs" />
     <Compile Include="Core\Requests\Concrete\CreateRequest.cs" />
     <Compile Include="Core\Requests\Concrete\DeleteRequest.cs" />

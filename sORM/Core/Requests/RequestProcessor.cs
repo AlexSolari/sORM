@@ -14,7 +14,7 @@ namespace sORM.Core.Requests
     public class RequestProcessor
     {
         private List<Action<string>> Listeners = new List<Action<string>>();
-        private DataContext connection = null;
+        public DataContext connection = null;
         private string connectionString;
 
         public RequestProcessor(string connectionString)
@@ -42,32 +42,39 @@ namespace sORM.Core.Requests
                     createTableCommand.Append(")");
                     connection.ExecuteCommand(createTableCommand.ToString());
                 }
-
             }
         }
 
         public IEnumerable<T> Execute<T>(IRequestWithResponse request)
         {
-            var sql = request.BuildSql();
-            OnRequest(sql);
-
             var rows = new List<Dictionary<string, object>>();
-            using (DbCommand command = connection.Connection.CreateCommand())
+            using (var command = request.BuildSql())
             {
-                command.CommandText = sql;
                 connection.Connection.Open();
-
-                using (DbDataReader reader = command.ExecuteReader(CommandBehavior.CloseConnection))
+                try
                 {
-                    while (reader.Read())
+                    OnRequest(command.CommandText);
+
+                    using (var reader = command.ExecuteReader(CommandBehavior.CloseConnection))
                     {
-                        var row = new Dictionary<string, object>();
+                        while (reader.Read())
+                        {
+                            var row = new Dictionary<string, object>();
 
-                        for (int i = 0; i < reader.FieldCount; i++)
-                            row.Add(reader.GetName(i), reader.GetValue(i));
+                            for (int i = 0; i < reader.FieldCount; i++)
+                                row.Add(reader.GetName(i), reader.GetValue(i));
 
-                        rows.Add(row);
+                            rows.Add(row);
+                        }
                     }
+                }
+                catch (Exception e)
+                {
+                    throw e;
+                }
+                finally
+                {
+                    connection.Connection.Close();
                 }
             }
 
@@ -87,7 +94,10 @@ namespace sORM.Core.Requests
                     }
                     else if (prop.PropertyType == typeof(string))
                     {
-                        prop.SetValue(obj, column.Value.ToString());
+                        if (!column.Value.Equals("NULL"))
+                            prop.SetValue(obj, column.Value.ToString());
+                        else
+                            prop.SetValue(obj, null);
                     }
                     else if (prop.PropertyType == typeof(int))
                     {
@@ -108,7 +118,10 @@ namespace sORM.Core.Requests
                     else if (prop.PropertyType == typeof(XmlDocument))
                     {
                         var xml = new XmlDocument();
-                        xml.LoadXml(column.Value.ToString());
+
+                        if(!column.Value.Equals("NULL"))
+                            xml.LoadXml(column.Value.ToString());
+
                         prop.SetValue(obj, xml);
                     }
                     else if (prop.PropertyType == typeof(Guid))
@@ -129,9 +142,24 @@ namespace sORM.Core.Requests
 
         public void Execute(IRequest request)
         {
-            var sql = request.BuildSql();
-            OnRequest(sql);
-            connection.ExecuteCommand(sql);
+            connection.Connection.Open();
+            try
+            {
+
+                using (var command = request.BuildSql())
+                {
+                    OnRequest(command.CommandText);
+                    command.ExecuteReader();
+                }
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+            finally
+            {
+                connection.Connection.Close();
+            }
         }
 
         protected void OnRequest(string sql)

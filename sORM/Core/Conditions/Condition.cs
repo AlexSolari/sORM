@@ -14,7 +14,7 @@ namespace sORM.Core.Conditions
             {
                 Field = field,
                 Operator = "=",
-                Value = (value is String || value is Guid) ? string.Format("'{0}'", value) : value.ToString()
+                Value = value
             };
         }
 
@@ -24,7 +24,7 @@ namespace sORM.Core.Conditions
             {
                 Field = field,
                 Operator = "!=",
-                Value = (value is String || value is Guid) ? string.Format("'{0}'", value) : value.ToString()
+                Value = value
             };
         }
 
@@ -34,7 +34,7 @@ namespace sORM.Core.Conditions
             {
                 Field = field,
                 Operator = (strict) ? ">=" : ">",
-                Value = (value is String || value is Guid) ? string.Format("'{0}'", value) : value.ToString()
+                Value = value
             };
         }
 
@@ -44,7 +44,7 @@ namespace sORM.Core.Conditions
             {
                 Field = field,
                 Operator = (strict) ? "<=" : "<",
-                Value = (value is String || value is Guid) ? string.Format("'{0}'", value) : value.ToString()
+                Value = value
             };
         }
 

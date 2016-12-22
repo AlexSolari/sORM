@@ -6,15 +6,36 @@ using System.Threading.Tasks;
 
 namespace sORM.Core.Conditions
 {
-    public class RequestCondition : ICondition
+    public class RequestCondition : RequestConditionBase, ICondition
     {
         public string Field { get; set; }
         public string Operator { get; set; }
-        public string Value { get; set; }
 
-        public string BuildSql()
+        private object _value;
+        public object Value
         {
-            return Field + Operator + Value;
+            get
+            {
+                return _value;
+            }
+            set
+            {
+                ParameterValue = value;
+                _value = value;
+            }
+        }
+
+        public override Dictionary<string, object> Parameters
+        {
+            get
+            {
+                return new Dictionary<string, object>() { [ParameterName] = ParameterValue };
+            }
+        }
+
+        public override string BuildSql()
+        {
+            return Field + Operator + ParameterName;
         }
     }
 }
