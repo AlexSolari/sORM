@@ -2,8 +2,8 @@
 Simple ORM and nothing more.
 
 ### Mappings
-To link class and table in database you need to inherit your class from `DataEntity` and decorate it with `DataModel` attribute.
-Then you need to decorate fields you want to see in database with `MapAsType` attributes.
+To link class and table in database you need to decorate it with `DataModel` attribute.
+Then you need to decorate fields you want to see in database with `MapAsType` attributes and decorate key field (Id or etc.) with `Key` attribute.
 You can also use `MapAuto` attribute to let the ORM detect and map type.
 
 Supported types for auto mapping:
@@ -24,7 +24,8 @@ Example:
     [MapAsType(DataType.String)]
     public string MyProperty2 { get; set; }
   
-    public override string DataId { get; set; }
+    [Key]
+    public string Id { get; set; }
   }
 ```
 
