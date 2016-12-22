@@ -1,15 +1,24 @@
 # sORM
 Simple ORM and nothing more.
 
-To link class and table in database you need to inherit your class from DataEntity and decorate it with DataModel attribute.
-Then you need to decorate fields you want to see in database with MapAsType attributes.
+### Mappings
+To link class and table in database you need to inherit your class from `DataEntity` and decorate it with `DataModel` attribute.
+Then you need to decorate fields you want to see in database with `MapAsType` attributes.
+You can also use `MapAuto` attribute to let the ORM detect and map type.
+
+Supported types for auto mapping:
+
+* `string` as **VARCHAR(MAX)**
+* `int` as **INT**
+* `bool` as **BIT**
+* `float` as **REAL**
 
 Example: 
 ```c#
   [DataModel]
   class MyClass : DataEntity
   {
-    [MapAsType(DataType.Int)]
+    [MapAuto]
     public int MyProperty { get; set; }
   
     [MapAsType(DataType.String)]
@@ -19,12 +28,14 @@ Example:
   }
 ```
 
-Then, on startup you need to setup connection string:
+### Connection setup
+On startup you need to setup connection string:
 
 ```c#
   SimpleORM.Current.Initialize(@"%CONNECTION_STRING_EXAMPLE%");
 ```
 
+### Creating and updating objects
 To create or update records use `CreateOrUpdate` method:
 
 ```c#
@@ -34,12 +45,14 @@ To create or update records use `CreateOrUpdate` method:
   SimpleORM.Current.CreateOrUpdate(obj);
 ```
 
+### Deleting objects
 To delete exact object use `Delete` method:
 
 ```c#
   SimpleORM.Current.Delete(obj);
 ```
 
+### Conditions
 You can get or delete bunch of records using **Conditions**.
 **Conditions** is a way to create complex conditions using *Equals*, *NotEquals*, *More*, *Less* and *Like* operators.
 **Conditions** can be modified using *And* and *Or* operators.
@@ -62,6 +75,15 @@ Example:
 
   var result = SimpleORM.Current.Get<MyClass>(
     Condition.Equals("MyProperty2", "baz"),
-    new DataEntityListLoadOptions() { PageSize = 1, PageNumber = 2 }
+    new DataEntityListLoadOptions(size: 1, index: 2)
   );
+```
+
+### Extras
+To get SQL what has been executed (for logging etc.) you should use `AddOnRequestListener`.
+
+Example:
+```c#
+  var logger = AwesomeFramework.Get<IAwesomeLoggingTool>(); //example
+  SimpleORM.Current.AddOnRequestListener( (sql) => logger.Log("Executed SQL: " + sql) );
 ```

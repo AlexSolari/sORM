@@ -1,8 +1,0 @@
-﻿################################################################################
-# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
-################################################################################
-
-/sORM/obj/Debug
-/.vs/sORM/v14
-/sORM/.vs/sORM/v14
-/sORM/bin/Debug
