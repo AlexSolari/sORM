@@ -17,7 +17,7 @@ Supported types for auto mapping:
 Example: 
 ```c#
   [DataModel]
-  class MyClass : DataEntity
+  class MyClass
   {
     [MapAuto]
     public int MyProperty { get; set; }
@@ -91,7 +91,7 @@ To create one-to-many reference from one entity to another you need to use `Key`
 Example:
 ```c#
   [DataModel]
-  class A : DataEntity
+  class A
   {
     [MapAuto]
     [Key]
@@ -99,7 +99,7 @@ Example:
   }
   
   [DataModel]
-  class B : DataEntity
+  class B
   {
     [MapAuto]
     [Key]
@@ -111,7 +111,7 @@ Example:
   }
   
   [DataModel]
-  class C : DataEntity
+  class C
   {
     [MapAuto]
     [Key]
