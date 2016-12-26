@@ -11,7 +11,16 @@ namespace sORM.Core.Mappings
     {
         public Dictionary<PropertyInfo, string> Data = new Dictionary<PropertyInfo, string>();
         public string Name;
-        public string KeyName;
+        public string PrimaryKeyName;
+        public List<string> SecondaryKeyNames;
+        public Dictionary<Type, KeyValuePair<string, string>> References;
+
+        public Map()
+        {
+            References = new Dictionary<Type, KeyValuePair<string, string>>();
+            SecondaryKeyNames = new List<string>();
+            PrimaryKeyName = null;
+        }
 
         public System.Data.SqlDbType GetSqlType(string key)
         {
@@ -34,6 +43,10 @@ namespace sORM.Core.Mappings
                 else if (info.PropertyType == typeof(bool))
                 {
                     return System.Data.SqlDbType.Bit;
+                }
+                else if (info.PropertyType == typeof(Guid))
+                {
+                    return System.Data.SqlDbType.UniqueIdentifier;
                 }
             }
             return System.Data.SqlDbType.VarChar;

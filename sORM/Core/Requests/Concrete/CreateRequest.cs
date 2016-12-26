@@ -22,26 +22,30 @@ namespace sORM.Core.Requests.Concrete
         {
             var map = SimpleORM.Current.Mappings[Target.GetType()];
             var keys = new List<string>();
-            var values = new List<string>();
+            var values = new List<object>();
             foreach (var item in map.Data)
             {
                 var value = item.Key.GetValue(Target);
                 keys.Add(item.Key.Name);
                 if (value == null)
                 {
-                    values.Add("NULL");
+                    values.Add(DBNull.Value);
                 }
-                else if (value is string || value is Guid || value is DateTime)
+                else if (value is string || value is DateTime)
                 {
                     values.Add(value.ToString());
                 }
                 else if (value is bool)
                 {
-                    values.Add(value.ToString());
+                    values.Add(value);
                 }
                 else if (value is XmlDocument)
                 {
                     values.Add(((XmlDocument)value).InnerXml);
+                }
+                else if (value is Guid)
+                {
+                    values.Add(value);
                 }
                 else
                 {

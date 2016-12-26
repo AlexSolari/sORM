@@ -136,9 +136,9 @@ namespace sORM.Core.Requests.Concrete
                     object value;
                     if (parameter.Value == null)
                     {
-                        value = "NULL";
+                        value = DBNull.Value;
                     }
-                    else if (parameter.Value is string || parameter.Value is Guid || parameter.Value is DateTime)
+                    else if (parameter.Value is string || parameter.Value is DateTime)
                     {
                         value = parameter.Value.ToString();
                     }
@@ -149,6 +149,10 @@ namespace sORM.Core.Requests.Concrete
                     else if (parameter.Value is XmlDocument)
                     {
                         value = ((XmlDocument)parameter.Value).InnerXml;
+                    }
+                    else if (parameter.Value is Guid)
+                    {
+                        value = parameter.Value;
                     }
                     else
                     {

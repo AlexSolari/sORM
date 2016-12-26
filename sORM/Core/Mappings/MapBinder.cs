@@ -15,6 +15,7 @@ namespace sORM.Core.Mappings
             [typeof(int)] = "int",
             [typeof(bool)] = "bit",
             [typeof(float)] = "real",
+            [typeof(Guid)] = "uniqueidentifier"
         };
 
 
@@ -33,7 +34,21 @@ namespace sORM.Core.Mappings
                 {
                     if (attrib.GetType() == typeof(KeyAttribute))
                     {
-                        result.KeyName = ((KeyAttribute)attrib).PropertyName;
+                        if (result.PrimaryKeyName != null)
+                            throw new KeyAlreadyMappedException(type);
+
+                        result.PrimaryKeyName = ((KeyAttribute)attrib).PropertyName;
+                    }
+
+                    if (attrib.GetType() == typeof(SecondaryKeyAttribute))
+                    {
+                        result.SecondaryKeyNames.Add(((SecondaryKeyAttribute)attrib).PropertyName);
+                    }
+
+                    if (attrib.GetType() == typeof(ReferenceToAttribute))
+                    {
+                        var attr = ((ReferenceToAttribute)attrib);
+                        result.References.Add(attr.TypeToReference, new KeyValuePair<string, string>(attr.PropertyName, attr.CurrentPropertyName));
                     }
 
                     if (attrib.GetType() == typeof(MapAsTypeAttribute))
@@ -53,7 +68,7 @@ namespace sORM.Core.Mappings
                 result.Data.Add(prop, parsedDefinition);
             }
 
-            if (string.IsNullOrWhiteSpace(result.KeyName))
+            if (string.IsNullOrWhiteSpace(result.PrimaryKeyName))
             {
                 throw new KeyPropertyNotFoundException(type);
             }

@@ -35,11 +35,11 @@ namespace sORM.Core
         #endregion
 
 
-        public Dictionary<Type, Map> Mappings = new Dictionary<Type, Map>();
+        internal Dictionary<Type, Map> Mappings = new Dictionary<Type, Map>();
 
         internal RequestProcessor Requests = null;
 
-        protected MapBinder Mapper = new MapBinder();
+        internal MapBinder Mapper = new MapBinder();
 
         public void AddOnRequestListener(Action<string> action)
         {
@@ -100,7 +100,7 @@ namespace sORM.Core
             var checkIsExistRequest = new SelectRequest(true);
             checkIsExistRequest.SetTargetType(obj.GetType());
 
-            isCreate = Count<T>(Condition.Equals(map.KeyName, typeof(T).GetProperty(map.KeyName).GetValue(obj))) == 0;
+            isCreate = Count<T>(Condition.Equals(map.PrimaryKeyName, typeof(T).GetProperty(map.PrimaryKeyName).GetValue(obj))) == 0;
 
             IRequest request;
 

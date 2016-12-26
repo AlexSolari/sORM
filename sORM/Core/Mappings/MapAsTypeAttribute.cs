@@ -13,6 +13,7 @@ namespace sORM.Core.Mappings
         Text,
         Bool,
         Float,
+        Guid
     }
 
     [AttributeUsage(AttributeTargets.Property, AllowMultiple=false, Inherited = true)]
@@ -35,6 +36,9 @@ namespace sORM.Core.Mappings
                     break;
                 case DataType.Float:
                     Type = "real";
+                    break;
+                case DataType.Guid:
+                    Type = "uniqueidentifier";
                     break;
                 default:
                     break;

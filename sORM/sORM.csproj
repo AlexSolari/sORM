@@ -53,12 +53,15 @@
     <Compile Include="Core\Conditions\RequestConditionGroup.cs" />
     <Compile Include="Core\DataEntityListLoadOptions.cs" />
     <Compile Include="Core\Mappings\DataModelAttribute.cs" />
+    <Compile Include="Core\Mappings\Exceptions\KeyAlreadyMappedException.cs" />
     <Compile Include="Core\Mappings\Exceptions\KeyPropertyNotFoundException.cs" />
+    <Compile Include="Core\Mappings\SecondaryKeyAttribute.cs" />
     <Compile Include="Core\Mappings\Map.cs" />
     <Compile Include="Core\Mappings\KeyAttribute.cs" />
     <Compile Include="Core\Mappings\MapAutoAttribute.cs" />
     <Compile Include="Core\Mappings\MapAsTypeAttribute.cs" />
     <Compile Include="Core\Mappings\MapBinder.cs" />
+    <Compile Include="Core\Mappings\ReferenceToAttribute.cs" />
     <Compile Include="Core\Requests\Concrete\CreateProcedureRequest.cs" />
     <Compile Include="Core\Requests\Concrete\AttachTriggerRequest.cs" />
     <Compile Include="Core\Requests\Concrete\SqlRequest.cs" />

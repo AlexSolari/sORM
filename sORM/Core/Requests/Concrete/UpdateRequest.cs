@@ -25,7 +25,7 @@ namespace sORM.Core.Requests.Concrete
             if (objToUpdate != null)
             {
                 var map = SimpleORM.Current.Mappings[TargetType];
-                AddCondition(Condition.Equals(map.KeyName, TargetType.GetProperty(map.KeyName).GetValue(objToUpdate)));
+                AddCondition(Condition.Equals(map.PrimaryKeyName, TargetType.GetProperty(map.PrimaryKeyName).GetValue(objToUpdate)));
 
                 var props = objToUpdate.GetType().GetProperties();
                 foreach (var p in props)
@@ -81,12 +81,8 @@ namespace sORM.Core.Requests.Concrete
             object res;
             if (value == null)
             {
-                res = "NULL";
+                res = DBNull.Value;
             }
-            /*else if (value is string || value is Guid || value is DateTime)
-            {
-                res = string.Format("{0}", value);
-            }*/
             else if (value is bool)
             {
                 res = value.ToString();

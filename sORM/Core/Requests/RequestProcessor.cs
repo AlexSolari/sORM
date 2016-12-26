@@ -1,4 +1,5 @@
-﻿using System;
+﻿using sORM.Core.Requests.Concrete;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
@@ -34,13 +35,94 @@ namespace sORM.Core.Requests
                 {
                     StringBuilder createTableCommand = new StringBuilder();
                     createTableCommand.Append("CREATE TABLE [" + map.Name + "](");
-                    foreach (var column in map.Data.Values)
+                    foreach (var column in map.Data)
                     {
-                        createTableCommand.Append(column);
-                        createTableCommand.Append(",");
+                        var fieldReferences = false;
+
+                        foreach (var reference in map.References)
+                        {
+                            if (reference.Value.Value == column.Key.Name)
+                            {
+                                fieldReferences = true;
+                                break;
+                            }
+                        }
+
+                        var valueToAppend = column.Value;
+                        if (fieldReferences)
+                        {
+                            valueToAppend = valueToAppend.Replace("MAX", "500");
+                        }
+
+                        if (map.SecondaryKeyNames.Contains(column.Key.Name))
+                        {
+                            valueToAppend = valueToAppend.Replace("MAX", "500");
+
+                            valueToAppend += " UNIQUE NOT NULL";
+                        }
+
+                        if (map.PrimaryKeyName == column.Key.Name && !map.SecondaryKeyNames.Contains(column.Key.Name))
+                        {
+                            valueToAppend += " NOT NULL";
+                        }
+
+                        valueToAppend += ",";
+
+                        createTableCommand.Append(valueToAppend);
                     }
                     createTableCommand.Append(")");
-                    connection.ExecuteCommand(createTableCommand.ToString());
+
+                    var request = new SqlRequest(createTableCommand.ToString());
+                    Execute(request);
+                }
+            }
+
+            BuildReferences();
+        }
+
+        private void BuildReferences()
+        {
+            foreach (var map in SimpleORM.Current.Mappings.Values)
+            {
+                var resultForeigns = connection.ExecuteQuery<int?>("SELECT count(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE CONSTRAINT_TYPE = 'PRIMARY KEY' AND TABLE_NAME = '"+ map.Name + "'").FirstOrDefault();
+
+                if (resultForeigns.HasValue && resultForeigns == 0)
+                {
+                    StringBuilder createPrimaryKeyCommand = new StringBuilder();
+                    createPrimaryKeyCommand.Append("ALTER TABLE [" + map.Name + "] ADD PRIMARY KEY (");
+                    createPrimaryKeyCommand.Append(map.PrimaryKeyName);
+                    createPrimaryKeyCommand.Append(")");
+
+                    var request = new SqlRequest(createPrimaryKeyCommand.ToString());
+                    Execute(request);
+                }
+            }
+
+            foreach (var map in SimpleORM.Current.Mappings.Values)
+            {
+                foreach (var reference in map.References)
+                {
+                    var referencedTypeMap = SimpleORM.Current.Mappings[reference.Key];
+                    var referencedTableName = referencedTypeMap.Name;
+                    var referencedPropName = reference.Value.Key;
+                    var keyPropName = reference.Value.Value;
+
+                    var resultForeigns = connection.ExecuteQuery<int?>("SELECT count(*) FROM INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE WHERE [TABLE_NAME] = '"+ map.Name + "' AND [COLUMN_NAME] = '"+ keyPropName + "'").FirstOrDefault();
+
+                    if (resultForeigns.HasValue && resultForeigns == 0)
+                    {
+                        StringBuilder createPrimaryKeyCommand = new StringBuilder();
+                        createPrimaryKeyCommand.Append("ALTER TABLE [" + map.Name + "] ADD FOREIGN  KEY (");
+                        createPrimaryKeyCommand.Append(keyPropName);
+                        createPrimaryKeyCommand.Append(") REFERENCES [");
+                        createPrimaryKeyCommand.Append(referencedTableName);
+                        createPrimaryKeyCommand.Append("](");
+                        createPrimaryKeyCommand.Append(referencedPropName);
+                        createPrimaryKeyCommand.Append(")");
+
+                        var request = new SqlRequest(createPrimaryKeyCommand.ToString());
+                        Execute(request);
+                    }
                 }
             }
         }
@@ -94,7 +176,7 @@ namespace sORM.Core.Requests
                     }
                     else if (prop.PropertyType == typeof(string))
                     {
-                        if (!column.Value.Equals("NULL"))
+                        if (!column.Value.Equals(DBNull.Value))
                             prop.SetValue(obj, column.Value.ToString());
                         else
                             prop.SetValue(obj, null);
@@ -119,7 +201,7 @@ namespace sORM.Core.Requests
                     {
                         var xml = new XmlDocument();
 
-                        if(!column.Value.Equals("NULL"))
+                        if(!column.Value.Equals(DBNull.Value))
                             xml.LoadXml(column.Value.ToString());
 
                         prop.SetValue(obj, xml);

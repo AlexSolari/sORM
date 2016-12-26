@@ -23,7 +23,7 @@ namespace sORM.Core.Requests.Concrete
             Conditions = new List<ICondition>();
 
             var map = SimpleORM.Current.Mappings[TargetType];
-            AddCondition(Condition.Equals(map.KeyName, TargetType.GetProperty(map.KeyName).GetValue(obj)));
+            AddCondition(Condition.Equals(map.PrimaryKeyName, TargetType.GetProperty(map.PrimaryKeyName).GetValue(obj)));
         }
 
         public DeleteRequest(Type type)
@@ -67,7 +67,7 @@ namespace sORM.Core.Requests.Concrete
                     object value;
                     if (parameter.Value == null)
                     {
-                        value = "NULL";
+                        value = DBNull.Value;
                     }
                     else if (parameter.Value is string || parameter.Value is Guid || parameter.Value is DateTime)
                     {
