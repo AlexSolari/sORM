@@ -12,6 +12,7 @@ Supported types for auto mapping:
 * `int` as **INT**
 * `bool` as **BIT**
 * `float` as **REAL**
+* `Guid` as **UNIQUEIDENTIFIER**
 
 Example: 
 ```c#
@@ -24,8 +25,9 @@ Example:
     [MapAsType(DataType.String)]
     public string MyProperty2 { get; set; }
   
+    [MapAsType(DataType.Guid)]
     [Key]
-    public string Id { get; set; }
+    public Guid Id { get; set; }
   }
 ```
 
@@ -78,6 +80,51 @@ Example:
     Condition.Equals("MyProperty2", "baz"),
     new DataEntityListLoadOptions(size: 1, index: 2)
   );
+```
+
+### References
+
+To create one-to-many reference from one entity to another you need to use `Key` or `SecondaryKey` attribute on property that will be referenced, and `ReferenceTo` attribute on property that will be referencing.
+
+*Note that properties decorated with `Key` and `SecondaryKey` will be NOT NULL and UNIQUE*
+
+Example:
+```c#
+  [DataModel]
+  class A : DataEntity
+  {
+    [MapAuto]
+    [Key]
+    public Guid Id { get; set; }
+  }
+  
+  [DataModel]
+  class B : DataEntity
+  {
+    [MapAuto]
+    [Key]
+    public Guid Id { get; set; }
+    
+    [MapAuto]
+    [SecondaryKey]
+    public int MyIntValue { get; set; }
+  }
+  
+  [DataModel]
+  class C : DataEntity
+  {
+    [MapAuto]
+    [Key]
+    public Guid Id { get; set; }
+    
+    [MapAuto]
+    [ReferenceTo(typeof(A), "Id"]
+    public Guid AnotherId { get; set; }
+    
+    [MapAuto]
+    [ReferenceTo(typeof(B), "MyIntValue"]
+    public int MyIntValueReference { get; set; }
+  }
 ```
 
 ### Extras
