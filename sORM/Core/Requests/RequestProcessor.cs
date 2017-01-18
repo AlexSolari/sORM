@@ -118,7 +118,7 @@ namespace sORM.Core.Requests
                         createPrimaryKeyCommand.Append(referencedTableName);
                         createPrimaryKeyCommand.Append("](");
                         createPrimaryKeyCommand.Append(referencedPropName);
-                        createPrimaryKeyCommand.Append(")");
+                        createPrimaryKeyCommand.Append(") ON DELETE CASCADE");
 
                         var request = new SqlRequest(createPrimaryKeyCommand.ToString());
                         Execute(request);
