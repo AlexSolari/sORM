@@ -43,9 +43,9 @@ To create or update records use `CreateOrUpdate` method:
 
 ```c#
   var obj = new MyClass() { MyProperty = 1, MyProperty2 = "foo" };
-  SimpleORM.Current.CreateOrUpdate(obj);
+  SimpleORM.Current.CreateOrUpdate(obj); //Now in database table MyClass contains row with MyProperty = 1 and MyProperty2 = "foo"
   obj.MyProperty = 666;
-  SimpleORM.Current.CreateOrUpdate(obj);
+  SimpleORM.Current.CreateOrUpdate(obj); //Now in database table MyClass contains row with MyProperty = 666 and MyProperty2 = "foo"
 ```
 
 ### Deleting objects
@@ -63,19 +63,22 @@ You can get or delete bunch of records using **Conditions**.
 Example:
 
 ```c#
+  //Deletes all rows in table MyClass where MyProperty2 equals to "foo" or MyProperty equals to 2
   SimpleORM.Current.Delete<MyClass>(
     Operator.Or(Condition.Equals("MyProperty2", "foo"), Condition.Equals("MyProperty", 2))
   );
   
+  //Deletes all rows in table MyClass where MyProperty2 equals to "123" and MyProperty equals to 333 or 999
   SimpleORM.Current.Delete<MyClass>(
     Operator.And(
       Condition.Equals("MyProperty2", "123"), 
       Operator.Or(
-        Condition.Equals("MyProperty2", "333"), Condition.Equals("MyProperty", 999)
+        Condition.Equals("MyProperty", 333), Condition.Equals("MyProperty", 999)
       )
     )
   );
 
+  //Retrieves third page with from table MyClass where MyProperty2 equal to "baz". There will be one row per page
   var result = SimpleORM.Current.Get<MyClass>(
     Condition.Equals("MyProperty2", "baz"),
     new DataEntityListLoadOptions(size: 1, index: 2)
