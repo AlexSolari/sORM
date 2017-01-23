@@ -174,45 +174,9 @@ namespace sORM.Core.Requests
                     {
                         obj = (T)column.Value;
                     }
-                    else if (prop.PropertyType == typeof(string))
+                    else
                     {
-                        if (!column.Value.Equals(DBNull.Value))
-                            prop.SetValue(obj, column.Value.ToString());
-                        else
-                            prop.SetValue(obj, null);
-                    }
-                    else if (prop.PropertyType == typeof(int))
-                    {
-                        var tmp = 0;
-                        int.TryParse(column.Value.ToString(), out tmp);
-                        prop.SetValue(obj, tmp);
-                    }
-                    else if (prop.PropertyType == typeof(float))
-                    {
-                        var tmp = 0f;
-                        float.TryParse(column.Value.ToString(), out tmp);
-                        prop.SetValue(obj, tmp);
-                    }
-                    else if (prop.PropertyType == typeof(bool))
-                    {
-                        prop.SetValue(obj, column.Value.ToString().Equals("1"));
-                    }
-                    else if (prop.PropertyType == typeof(XmlDocument))
-                    {
-                        var xml = new XmlDocument();
-
-                        if(!column.Value.Equals(DBNull.Value))
-                            xml.LoadXml(column.Value.ToString());
-
-                        prop.SetValue(obj, xml);
-                    }
-                    else if (prop.PropertyType == typeof(Guid))
-                    {
-                        prop.SetValue(obj, Guid.Parse(column.Value.ToString()));
-                    }
-                    else if (prop.PropertyType == typeof(DateTime))
-                    {
-                        prop.SetValue(obj, DateTime.Parse(column.Value.ToString()));
+                        prop.SetValue(obj, column.Value);
                     }
                 }
 
