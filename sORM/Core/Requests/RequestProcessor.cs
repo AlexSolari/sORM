@@ -176,7 +176,7 @@ namespace sORM.Core.Requests
                     }
                     else
                     {
-                        prop.SetValue(obj, column.Value);
+                        prop.SetValue(obj, (column.Value.Equals(DBNull.Value) ? null : column.Value));
                     }
                 }
 
