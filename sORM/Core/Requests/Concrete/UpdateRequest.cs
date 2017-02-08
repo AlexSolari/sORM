@@ -27,8 +27,7 @@ namespace sORM.Core.Requests.Concrete
                 var map = SimpleORM.Current.Mappings[TargetType];
                 AddCondition(Condition.Equals(map.PrimaryKeyName, TargetType.GetProperty(map.PrimaryKeyName).GetValue(objToUpdate)));
 
-                var props = objToUpdate.GetType().GetProperties();
-                foreach (var p in props)
+                foreach (var p in map.Data.Keys)
                 {
                     AddParameter(p.Name, p.GetValue(objToUpdate));
                 }
