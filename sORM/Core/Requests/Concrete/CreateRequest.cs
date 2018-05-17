@@ -31,21 +31,13 @@ namespace sORM.Core.Requests.Concrete
                 {
                     values.Add(DBNull.Value);
                 }
-                else if (value is string || value is DateTime)
-                {
-                    values.Add(value.ToString());
-                }
-                else if (value is bool)
+                else if (value is bool || value is Guid)
                 {
                     values.Add(value);
                 }
                 else if (value is XmlDocument)
                 {
                     values.Add(((XmlDocument)value).InnerXml);
-                }
-                else if (value is Guid)
-                {
-                    values.Add(value);
                 }
                 else
                 {

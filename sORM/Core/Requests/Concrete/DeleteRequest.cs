@@ -69,10 +69,6 @@ namespace sORM.Core.Requests.Concrete
                     {
                         value = DBNull.Value;
                     }
-                    else if (parameter.Value is string || parameter.Value is DateTime)
-                    {
-                        value = parameter.Value.ToString();
-                    }
                     else if (parameter.Value is bool || parameter.Value is Guid)
                     {
                         value = parameter.Value;

@@ -82,10 +82,6 @@ namespace sORM.Core.Requests.Concrete
             {
                 res = DBNull.Value;
             }
-            else if (value is bool)
-            {
-                res = value.ToString();
-            }
             else if (value is XmlDocument)
             {
                 res = ((XmlDocument)value).InnerXml;

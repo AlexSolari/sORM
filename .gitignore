@@ -1,0 +1,8 @@
+﻿/sORM/obj/Debug
+/sORM/obj/Debug
+/sORM/bin/Debug
+/sORM/bin/Debug
+*.dll
+*.config
+*.pdb
+*.suo
