@@ -1,7 +1,7 @@
 # sORM
 Simple ORM and nothing more.
 
-Latest version: https://www.nuget.org/packages/sORM/1.1.0
+Latest version: https://www.nuget.org/packages/sORM/
 
 ## Installation
 
