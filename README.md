@@ -1,16 +1,14 @@
 # sORM
 Simple ORM and nothing more.
 
-Latest download: https://www.dropbox.com/s/2fo19tggbfy10mw/sORM%20v1.1.rar
+Latest version: https://www.nuget.org/packages/sORM/1.1.0
 
 ## Installation
 
-As a binary:
+As a package:
 
-1. Extract files from the archive.
-2. Place them in your packages folder.
-3. Add reference to sORM.dll
-4. Start using sORM via SimpleORM class.
+1. Install package from NuGet
+2. Start using sORM via SimpleORM class.
 
 As a project:
 
