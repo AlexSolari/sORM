@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace sORM.Core.Requests.Concrete
 {
-    public class AttachTriggerRequest<TType> : IRequest
+    internal class AttachTriggerRequest<TType> : IRequest
     {
         public enum When
         {
@@ -58,9 +58,9 @@ namespace sORM.Core.Requests.Concrete
             SqlData = string.Format(SqlData, name, whenExecute, requestType, tablename);
         }
 
-        public IDbCommand BuildSql()
+        public IDbCommand BuildSql(SqlConnection connection)
         {
-            return new SqlCommand(SqlData, SimpleORM.Current.Requests.connection.Connection as SqlConnection);
+            return new SqlCommand(SqlData, connection);
         }
     }
 }

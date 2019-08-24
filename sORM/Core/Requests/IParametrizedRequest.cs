@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace sORM.Core.Requests
 {
-    public interface IParametrizedRequest : IRequest
+    internal interface IParametrizedRequest : IRequest
     {
         void AddParameter(string fieldname, object value);
     }

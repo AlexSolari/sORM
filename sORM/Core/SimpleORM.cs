@@ -1,5 +1,6 @@
 ﻿using sORM.Core.Conditions;
 using sORM.Core.Mappings;
+using sORM.Core.Mappings.Exceptions;
 using sORM.Core.Requests;
 using sORM.Core.Requests.Concrete;
 using System;
@@ -12,6 +13,10 @@ using System.Threading.Tasks;
 
 namespace sORM.Core
 {
+    /// <summary>
+    /// CRUD ORM system.
+    /// Use "Current" property to access methods.
+    /// </summary>
     public class SimpleORM
     {
         #region Singleton
@@ -22,6 +27,9 @@ namespace sORM.Core
 
 	    }
 
+        /// <summary>
+        /// Gets current instance of sORM
+        /// </summary>
         public static SimpleORM Current 
         {
             get
@@ -34,18 +42,28 @@ namespace sORM.Core
         }
         #endregion
 
-
         internal Dictionary<Type, Map> Mappings = new Dictionary<Type, Map>();
 
         internal RequestProcessor Requests = null;
 
         internal MapBinder Mapper = new MapBinder();
 
+        /// <summary>
+        /// Adds a listener that will be called on request to database.
+        /// </summary>
+        /// <param name="action">Callback that will recieve SQL query that beign executed.</param>
         public void AddOnRequestListener(Action<string> action)
         {
+            if (Requests == null)
+                throw new NotInitializedException();
+
             Requests.AddOnRequestListener(action);
         }
 
+        /// <summary>
+        /// Initializes sORM and creates mappings for annotated classes.
+        /// </summary>
+        /// <param name="connectionString">Connection string to database</param>
         public void Initialize(string connectionString)
         {
             Requests = new RequestProcessor(connectionString);
@@ -92,8 +110,16 @@ namespace sORM.Core
             Requests.Execute(healthCheckRequest);
         }
 
+        /// <summary>
+        /// Updates existing entity or creates new one if does not exist in database.
+        /// </summary>
+        /// <typeparam name="T">Entity type</typeparam>
+        /// <param name="obj">Entity being updated/created</param>
         public void CreateOrUpdate<T>(T obj)
         {
+            if (Requests == null)
+                throw new NotInitializedException();
+
             var map = Mappings[typeof(T)];
             var isCreate = false;
 
@@ -116,22 +142,50 @@ namespace sORM.Core
             Requests.Execute(request);
         }
 
+        /// <summary>
+        /// Deletes target entity from database.
+        /// </summary>
+        /// <param name="obj">Entity being deleted</param>
         public void Delete(object obj)
         {
+            if (Requests == null)
+                throw new NotInitializedException();
+
             var request = new DeleteRequest(obj);
             Requests.Execute(request);
         }
 
+        /// <summary>
+        /// Deletes all entities of target type that are matching condition.
+        /// All entities will be deleted if no condition passed.
+        /// </summary>
+        /// <typeparam name="T">Entity type</typeparam>
+        /// <param name="condition">Condition to match entities on</param>
         public void Delete<T>(ICondition condition = null)
         {
+            if (Requests == null)
+                throw new NotInitializedException();
+
             var request = new DeleteRequest(typeof(T));
             if (condition != null)
                 request.AddCondition(condition);
             Requests.Execute(request);
         }
 
+        /// <summary>
+        /// Gets entities of choosen type that are matching condition with pagination.
+        /// All entities will be returned if no condition passed.
+        /// All entities at once will be returned if no options passed.
+        /// </summary>
+        /// <typeparam name="T">Entity type</typeparam>
+        /// <param name="condition">Condition to match entities on</param>
+        /// <param name="options">Pagination options</param>
+        /// <returns>Collection of entities</returns>
         public IEnumerable<T> Get<T>(ICondition condition = null, DataEntityListLoadOptions options = null)
         {
+            if (Requests == null)
+                throw new NotInitializedException();
+
             SelectRequest request;
 
             if (options == null)
@@ -160,8 +214,18 @@ namespace sORM.Core
             return Requests.Execute<T>(request);
         }
 
+        /// <summary>
+        /// Gets number of entities that are matching condition.
+        /// Returns total number of entities if no condition passed.
+        /// </summary>
+        /// <typeparam name="T">Entity type</typeparam>
+        /// <param name="condition">Condition to match entities on</param>
+        /// <returns>Number of entities</returns>
         public int Count<T>(ICondition condition = null)
         {
+            if (Requests == null)
+                throw new NotInitializedException();
+
             var request = new SelectRequest(true);
 
             request.SetTargetType<T>();

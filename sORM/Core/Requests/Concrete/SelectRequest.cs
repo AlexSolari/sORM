@@ -9,7 +9,7 @@ using System.Xml;
 
 namespace sORM.Core.Requests.Concrete
 {
-    public class SelectRequest : IRequestWithResponse, IConditionalRequest
+    internal class SelectRequest : IRequestWithResponse, IConditionalRequest
     {
         public IList<ICondition> Conditions { get; set; }
         private Type responseType;
@@ -89,7 +89,7 @@ namespace sORM.Core.Requests.Concrete
             targetType = type;
         }
 
-        public System.Data.IDbCommand BuildSql()
+        public System.Data.IDbCommand BuildSql(SqlConnection connection)
         {
             var map = SimpleORM.Current.Mappings[targetType];
 
@@ -127,7 +127,7 @@ namespace sORM.Core.Requests.Concrete
                 request += " OFFSET " + pageSize * pageCount + " ROWS FETCH NEXT " + pageSize + " ROWS ONLY ";
             }
 
-            var command = new SqlCommand(request, SimpleORM.Current.Requests.connection.Connection as SqlConnection);
+            var command = new SqlCommand(request, connection);
 
             foreach (RequestCondition item in Conditions)
             {

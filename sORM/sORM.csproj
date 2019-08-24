@@ -55,6 +55,7 @@
     <Compile Include="Core\Mappings\DataModelAttribute.cs" />
     <Compile Include="Core\Mappings\Exceptions\KeyAlreadyMappedException.cs" />
     <Compile Include="Core\Mappings\Exceptions\KeyPropertyNotFoundException.cs" />
+    <Compile Include="Core\Mappings\Exceptions\NotInitializedException.cs" />
     <Compile Include="Core\Mappings\SecondaryKeyAttribute.cs" />
     <Compile Include="Core\Mappings\Map.cs" />
     <Compile Include="Core\Mappings\KeyAttribute.cs" />

@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace sORM.Core.Mappings.Exceptions
 {
-    internal class KeyPropertyNotFoundException : Exception
+    internal class NotInitializedException : Exception
     {
-        public KeyPropertyNotFoundException(Type type) : base("Key property is not defined for class " + type.FullName)
+        public NotInitializedException() : base("Instance of sORM was not initialized")
         {
 
         }

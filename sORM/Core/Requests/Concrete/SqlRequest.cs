@@ -10,7 +10,7 @@ using System.Data;
 
 namespace sORM.Core.Requests.Concrete
 {
-    public class SqlRequest : IRequest
+    internal class SqlRequest : IRequest
     {
         public string Sql;
 
@@ -19,9 +19,9 @@ namespace sORM.Core.Requests.Concrete
             Sql = sql;
         }
 
-        public IDbCommand BuildSql()
+        public IDbCommand BuildSql(SqlConnection connection)
         {
-            return new SqlCommand(Sql, SimpleORM.Current.Requests.connection.Connection as SqlConnection);
+            return new SqlCommand(Sql, connection);
         }
     }
 }

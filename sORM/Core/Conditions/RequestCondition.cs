@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace sORM.Core.Conditions
 {
-    public class RequestCondition : RequestConditionBase, ICondition
+    internal class RequestCondition : RequestConditionBase, ICondition
     {
         public string Field { get; set; }
         public string Operator { get; set; }

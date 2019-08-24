@@ -10,7 +10,7 @@ using System.Xml;
 
 namespace sORM.Core.Requests.Concrete
 {
-    public class DeleteRequest : IConditionalRequest
+    internal class DeleteRequest : IConditionalRequest
     {
         public IList<ICondition> Conditions { get; set; }
         private string tableName;
@@ -38,7 +38,7 @@ namespace sORM.Core.Requests.Concrete
             Conditions.Add(condition);
         }
 
-        public IDbCommand BuildSql()
+        public IDbCommand BuildSql(SqlConnection connection)
         {
             var map = SimpleORM.Current.Mappings[TargetType];
 
@@ -58,7 +58,7 @@ namespace sORM.Core.Requests.Concrete
                 }
             }
 
-            var command = new SqlCommand(request, SimpleORM.Current.Requests.connection.Connection as SqlConnection);
+            var command = new SqlCommand(request, connection);
 
             foreach (RequestCondition item in Conditions)
             {

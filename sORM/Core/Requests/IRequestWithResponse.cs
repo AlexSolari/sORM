@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace sORM.Core.Requests
 {
-    public interface IRequestWithResponse : IRequest
+    internal interface IRequestWithResponse : IRequest
     {
         Type GetResponseType();
         void SetResponseType<TType>();

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace sORM.Core.Requests.Concrete
 {
-    public class CreateProcedureRequest : IRequest
+    internal class CreateProcedureRequest : IRequest
     {
         public string SqlData { get; set; }
 
@@ -22,9 +22,9 @@ namespace sORM.Core.Requests.Concrete
                 " END;";
         }
 
-        public IDbCommand BuildSql()
+        public IDbCommand BuildSql(SqlConnection connection)
         {
-            return new SqlCommand(SqlData, SimpleORM.Current.Requests.connection.Connection as SqlConnection);
+            return new SqlCommand(SqlData, connection);
         }
     }
 }

@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace sORM.Core.Mappings
 {
+    /// <summary>
+    /// Marks decorated property to be a secondary key for entity.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Property, AllowMultiple=false, Inherited=true)]
     public class SecondaryKeyAttribute : Attribute
     {

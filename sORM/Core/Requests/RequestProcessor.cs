@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Data.Linq;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,75 +13,94 @@ using System.Xml;
 
 namespace sORM.Core.Requests
 {
-    public class RequestProcessor
+    internal class RequestProcessor
     {
         private List<Action<string>> Listeners = new List<Action<string>>();
-        public DataContext connection = null;
         private string connectionString;
 
         public RequestProcessor(string connectionString)
         {
             this.connectionString = connectionString;
+        }
 
-            connection = new DataContext(connectionString);
+        private void WithDatabase(Action<DataContext> action)
+        {
+            using (var connection = new DataContext(connectionString))
+            {
+                action(connection);
+            }
+        }
+
+        private TType WithDatabase<TType>(Func<DataContext, TType> action)
+        {
+            TType result = default(TType);
+
+            using (var connection = new DataContext(connectionString))
+            {
+                result = action(connection);
+            }
+
+            return result;
         }
 
         public void Initialize()
         {
-            foreach (var map in SimpleORM.Current.Mappings.Values)
-            {
-                var result = connection.ExecuteQuery<int?>("SELECT count(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '" + map.Name + "'").FirstOrDefault();
-
-                if (result.HasValue && result == 0)
+            WithDatabase((connection) => {
+                foreach (var map in SimpleORM.Current.Mappings.Values)
                 {
-                    StringBuilder createTableCommand = new StringBuilder();
-                    createTableCommand.Append("CREATE TABLE [" + map.Name + "](");
-                    foreach (var column in map.Data)
+                    var result = connection.ExecuteQuery<int?>("SELECT count(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '" + map.Name + "'").FirstOrDefault();
+
+                    if (result.HasValue && result == 0)
                     {
-                        var fieldReferences = false;
-
-                        foreach (var reference in map.References)
+                        StringBuilder createTableCommand = new StringBuilder();
+                        createTableCommand.Append("CREATE TABLE [" + map.Name + "](");
+                        foreach (var column in map.Data)
                         {
-                            if (reference.Value.Value == column.Key.Name)
+                            var fieldReferences = false;
+
+                            foreach (var reference in map.References)
                             {
-                                fieldReferences = true;
-                                break;
+                                if (reference.Value.Value == column.Key.Name)
+                                {
+                                    fieldReferences = true;
+                                    break;
+                                }
                             }
+
+                            var valueToAppend = column.Value;
+                            if (fieldReferences)
+                            {
+                                valueToAppend = valueToAppend.Replace("MAX", "500");
+                            }
+
+                            if (map.SecondaryKeyNames.Contains(column.Key.Name))
+                            {
+                                valueToAppend = valueToAppend.Replace("MAX", "500");
+
+                                valueToAppend += " UNIQUE NOT NULL";
+                            }
+
+                            if (map.PrimaryKeyName == column.Key.Name && !map.SecondaryKeyNames.Contains(column.Key.Name))
+                            {
+                                valueToAppend += " NOT NULL";
+                            }
+
+                            valueToAppend += ",";
+
+                            createTableCommand.Append(valueToAppend);
                         }
+                        createTableCommand.Append(")");
 
-                        var valueToAppend = column.Value;
-                        if (fieldReferences)
-                        {
-                            valueToAppend = valueToAppend.Replace("MAX", "500");
-                        }
-
-                        if (map.SecondaryKeyNames.Contains(column.Key.Name))
-                        {
-                            valueToAppend = valueToAppend.Replace("MAX", "500");
-
-                            valueToAppend += " UNIQUE NOT NULL";
-                        }
-
-                        if (map.PrimaryKeyName == column.Key.Name && !map.SecondaryKeyNames.Contains(column.Key.Name))
-                        {
-                            valueToAppend += " NOT NULL";
-                        }
-
-                        valueToAppend += ",";
-
-                        createTableCommand.Append(valueToAppend);
+                        var request = new SqlRequest(createTableCommand.ToString());
+                        Execute(request);
                     }
-                    createTableCommand.Append(")");
-
-                    var request = new SqlRequest(createTableCommand.ToString());
-                    Execute(request);
                 }
-            }
 
-            BuildReferences();
+                BuildReferences(connection);
+            });
         }
 
-        private void BuildReferences()
+        private void BuildReferences(DataContext connection)
         {
             foreach (var map in SimpleORM.Current.Mappings.Values)
             {
@@ -129,25 +149,77 @@ namespace sORM.Core.Requests
 
         public IEnumerable<T> Execute<T>(IRequestWithResponse request)
         {
-            var rows = new List<Dictionary<string, object>>();
-            using (var command = request.BuildSql())
-            {
+            return WithDatabase<IEnumerable<T>>((connection) => {
+
+                var rows = new List<Dictionary<string, object>>();
+                using (var command = request.BuildSql(connection.Connection as SqlConnection))
+                {
+                    connection.Connection.Open();
+                    try
+                    {
+                        OnRequest(command.CommandText);
+
+                        using (var reader = command.ExecuteReader(CommandBehavior.CloseConnection))
+                        {
+                            while (reader.Read())
+                            {
+                                var row = new Dictionary<string, object>();
+
+                                for (int i = 0; i < reader.FieldCount; i++)
+                                    row.Add(reader.GetName(i), reader.GetValue(i));
+
+                                rows.Add(row);
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        throw e;
+                    }
+                    finally
+                    {
+                        connection.Connection.Close();
+                    }
+                }
+
+                var objects = new List<T>();
+
+                foreach (var row in rows)
+                {
+                    var obj = Activator.CreateInstance<T>();
+
+                    foreach (var column in row)
+                    {
+                        var prop = obj.GetType().GetProperty(column.Key);
+
+                        if (prop == null)
+                        {
+                            if (typeof(T) == typeof(int))
+                                obj = (T)column.Value;
+                        }
+                        else
+                        {
+                            prop.SetValue(obj, (column.Value.Equals(DBNull.Value) ? null : column.Value));
+                        }
+                    }
+
+                    objects.Add(obj);
+                }
+
+                return objects;
+            });
+        }
+
+        public void Execute(IRequest request)
+        {
+            WithDatabase((connection) => {
                 connection.Connection.Open();
                 try
                 {
-                    OnRequest(command.CommandText);
-
-                    using (var reader = command.ExecuteReader(CommandBehavior.CloseConnection))
+                    using (var command = request.BuildSql(connection.Connection as SqlConnection))
                     {
-                        while (reader.Read())
-                        {
-                            var row = new Dictionary<string, object>();
-
-                            for (int i = 0; i < reader.FieldCount; i++)
-                                row.Add(reader.GetName(i), reader.GetValue(i));
-
-                            rows.Add(row);
-                        }
+                        OnRequest(command.CommandText);
+                        command.ExecuteReader();
                     }
                 }
                 catch (Exception e)
@@ -158,54 +230,7 @@ namespace sORM.Core.Requests
                 {
                     connection.Connection.Close();
                 }
-            }
-
-            var objects = new List<T>();
-
-            foreach (var row in rows)
-            {
-                var obj = Activator.CreateInstance<T>();
-
-                foreach (var column in row)
-                {
-                    var prop = obj.GetType().GetProperty(column.Key);
-
-                    if (prop == null && typeof(T) == typeof(int))
-                    {
-                        obj = (T)column.Value;
-                    }
-                    else
-                    {
-                        prop.SetValue(obj, (column.Value.Equals(DBNull.Value) ? null : column.Value));
-                    }
-                }
-
-                objects.Add(obj);
-            }
-
-            return objects;
-        }
-
-        public void Execute(IRequest request)
-        {
-            connection.Connection.Open();
-            try
-            {
-
-                using (var command = request.BuildSql())
-                {
-                    OnRequest(command.CommandText);
-                    command.ExecuteReader();
-                }
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
-            finally
-            {
-                connection.Connection.Close();
-            }
+            });
         }
 
         protected void OnRequest(string sql)

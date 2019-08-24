@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace sORM.Core.Mappings
 {
-    public class MapBinder
+    internal class MapBinder
     {
         private Dictionary<Type, string> TypeMapping = new Dictionary<Type, string>()
         {

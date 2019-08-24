@@ -7,6 +7,10 @@ using System.Threading.Tasks;
 
 namespace sORM.Core.Mappings
 {
+    /// <summary>
+    /// Creates a reference to another entity.
+    /// Referenced field needs to be primary or secondary key.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = true, Inherited = true)]
     public class ReferenceToAttribute : Attribute
     {

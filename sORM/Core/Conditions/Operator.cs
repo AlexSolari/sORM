@@ -8,6 +8,12 @@ namespace sORM.Core.Conditions
 {
     public static class Operator
     {
+        /// <summary>
+        /// Joins two conditions under AND operator.
+        /// </summary>
+        /// <param name="first">First condition</param>
+        /// <param name="second">Second condition</param>
+        /// <returns>Created condition</returns>
         public static ICondition And(ICondition first, ICondition second)
         {
             return new RequestConditionGroup()
@@ -18,6 +24,12 @@ namespace sORM.Core.Conditions
             };
         }
 
+        /// <summary>
+        /// Joins two conditions under OR operator.
+        /// </summary>
+        /// <param name="first">First condition</param>
+        /// <param name="second">Second condition</param>
+        /// <returns>Created condition</returns>
         public static ICondition Or(ICondition first, ICondition second)
         {
             return new RequestConditionGroup()

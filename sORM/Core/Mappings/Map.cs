@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace sORM.Core.Mappings
 {
-    public class Map
+    internal class Map
     {
         public Dictionary<PropertyInfo, string> Data = new Dictionary<PropertyInfo, string>();
         public string Name;

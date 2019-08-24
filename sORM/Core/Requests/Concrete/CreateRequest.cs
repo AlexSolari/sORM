@@ -9,7 +9,7 @@ using System.Xml;
 
 namespace sORM.Core.Requests.Concrete
 {
-    public class CreateRequest : IRequest
+    internal class CreateRequest : IRequest
     {
         private object Target;
 
@@ -18,7 +18,7 @@ namespace sORM.Core.Requests.Concrete
             Target = objToCreate;
         }
 
-        public IDbCommand BuildSql()
+        public IDbCommand BuildSql(SqlConnection connection)
         {
             var map = SimpleORM.Current.Mappings[Target.GetType()];
             var keys = new List<string>();
@@ -47,7 +47,7 @@ namespace sORM.Core.Requests.Concrete
 
             var generatedKeys = keys.Select(x => "@SqlParam" + x).ToList();
             var commandText = "INSERT INTO [" + map.Name + "] (" + string.Join(",", keys) + ")" + " VALUES " + " (" + string.Join(",", generatedKeys) + ")";
-            var command = new SqlCommand(commandText, SimpleORM.Current.Requests.connection.Connection as SqlConnection);
+            var command = new SqlCommand(commandText, connection);
             
             foreach (var item in generatedKeys.ToDictionary(x => x, y => values[generatedKeys.IndexOf(y)]))
             {

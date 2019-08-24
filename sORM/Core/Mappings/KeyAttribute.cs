@@ -7,6 +7,11 @@ using System.Threading.Tasks;
 
 namespace sORM.Core.Mappings
 {
+    /// <summary>
+    /// Marks target property as PRIMARY KEY for entity.
+    /// Must be unique and only one per entity.
+    /// Will be used to differentiate entities.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Property, AllowMultiple=false, Inherited=true)]
     public class KeyAttribute : Attribute
     {

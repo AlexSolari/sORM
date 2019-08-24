@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace sORM.Core.Requests
 {
-    public interface IConditionalRequest : IRequest
+    internal interface IConditionalRequest : IRequest
     {
         IList<ICondition> Conditions { get; set; }
         void AddCondition(ICondition condition);

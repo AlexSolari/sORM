@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace sORM.Core.Conditions
 {
-    public class RequestConditionGroup : ICondition
+    internal class RequestConditionGroup : ICondition
     {
         public ICondition First { get; set; }
         public ICondition Second { get; set; }

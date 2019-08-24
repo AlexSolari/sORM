@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace sORM.Core.Mappings.Exceptions
 {
-    public class KeyAlreadyMappedException : Exception
+    internal class KeyAlreadyMappedException : Exception
     {
         public KeyAlreadyMappedException(Type type) : base("Key property is already mapped for class " + type.FullName)
         {

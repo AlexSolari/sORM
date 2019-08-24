@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 
 namespace sORM.Core.Requests
 {
-    public interface IRequest
+    internal interface IRequest
     {
-        IDbCommand BuildSql();
+        IDbCommand BuildSql(SqlConnection connection);
     }
 }

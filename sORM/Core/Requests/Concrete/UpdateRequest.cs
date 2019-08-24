@@ -10,7 +10,7 @@ using System.Xml;
 
 namespace sORM.Core.Requests.Concrete
 {
-    public class UpdateRequest : IParametrizedRequest, IConditionalRequest
+    internal class UpdateRequest : IParametrizedRequest, IConditionalRequest
     {
         public IList<ICondition> Conditions { get; set; }
         private Dictionary<string, object> parameters = new Dictionary<string, object>();
@@ -21,9 +21,10 @@ namespace sORM.Core.Requests.Concrete
         {
             Conditions = new List<ICondition>();
             Target = objToUpdate;
-            TargetType = objToUpdate.GetType();
             if (objToUpdate != null)
             {
+                TargetType = objToUpdate.GetType();
+
                 var map = SimpleORM.Current.Mappings[TargetType];
                 AddCondition(Condition.Equals(map.PrimaryKeyName, TargetType.GetProperty(map.PrimaryKeyName).GetValue(objToUpdate)));
 
@@ -34,7 +35,7 @@ namespace sORM.Core.Requests.Concrete
             }
         }
 
-        public IDbCommand BuildSql()
+        public IDbCommand BuildSql(SqlConnection connection)
         {
             var map = SimpleORM.Current.Mappings[Target.GetType()];
 
@@ -57,7 +58,7 @@ namespace sORM.Core.Requests.Concrete
             }
             
             var commandText = "UPDATE [" + map.Name + "] SET " + string.Join(",", prms) + cnds;
-            var command = new SqlCommand(commandText, SimpleORM.Current.Requests.connection.Connection as SqlConnection);
+            var command = new SqlCommand(commandText, connection);
 
             foreach (var item in generatedPrms)
             {

@@ -6,8 +6,18 @@ using System.Threading.Tasks;
 
 namespace sORM.Core
 {
+    /// <summary>
+    /// Pagination options
+    /// </summary>
     public class DataEntityListLoadOptions
     {
+        /// <summary>
+        /// Creates pagination options.
+        /// </summary>
+        /// <param name="size">Page size.</param>
+        /// <param name="index">Page index.</param>
+        /// <param name="by">Field name to order by.</param>
+        /// <param name="asc">Is sorting in ascending order.</param>
         public DataEntityListLoadOptions(int size = 10, int index = 0, string by = null, bool asc = false)
         {
             PageSize = size;

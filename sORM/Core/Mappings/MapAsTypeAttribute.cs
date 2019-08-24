@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace sORM.Core.Mappings
 {
+    /// <summary>
+    /// Data types for explicit mappings.
+    /// </summary>
     public enum DataType
     {
         Int,
@@ -16,6 +19,9 @@ namespace sORM.Core.Mappings
         Guid
     }
 
+    /// <summary>
+    /// Maps decorated property to choosen data type in database.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Property, AllowMultiple=false, Inherited = true)]
     public class MapAsTypeAttribute : Attribute
     {

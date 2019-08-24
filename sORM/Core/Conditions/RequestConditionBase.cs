@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace sORM.Core.Conditions
 {
-    public abstract class RequestConditionBase : ICondition
+    internal abstract class RequestConditionBase : ICondition
     {
         public string ParameterName { get; set; } = "@"+Guid.NewGuid().ToString().Replace("-","");
         public abstract Dictionary<string, object> Parameters { get; }
