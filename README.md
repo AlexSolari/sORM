@@ -1,6 +1,26 @@
 # sORM
 Simple ORM and nothing more.
 
+Latest download: https://www.dropbox.com/s/2fo19tggbfy10mw/sORM%20v1.1.rar
+
+## Installation
+
+As a binary:
+
+1. Extract files from the archive.
+2. Place them in your packages folder.
+3. Add reference to sORM.dll
+4. Start using sORM via SimpleORM class.
+
+As a project:
+
+1. Download source code.
+2. Copy sORM project into your solution.
+3. Add reference to it.
+4. Start using sORM via SimpleORM class.
+
+## Usage
+
 ### Mappings
 To link class and table in database you need to decorate it with `DataModel` attribute.
 Then you need to decorate fields you want to see in database with `MapAsType` attributes and decorate key field (Id or etc.) with `Key` attribute.
